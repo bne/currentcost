@@ -24,10 +24,7 @@ setup(
     author=author,
     author_email=email,
     download_url=download_url,
-    install_requires=[
-        'mutagen',
-        'nose',
-        ],
+    install_requires=[],
     zip_safe=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
