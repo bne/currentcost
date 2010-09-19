@@ -15,6 +15,7 @@ from ConfigParser import NoSectionError
 DEFAULTS = {
     'baud': 9600, # Note many people report this being 2400 for them
     'device': '/dev/ttyUSB0',
+    'use_meter_time': False,
     'db': 'sqlite',
     'loglevel': 'ERROR',
     'logfile': '/tmp/currentcost.log',
@@ -51,4 +52,5 @@ class Config(object):
         self.device = config.get('system', 'device')
         self.baud = config.get('system', 'baud')
         self.db = config.get('system', 'db')
+        self.use_meter_time = config.get('system', 'use_meter_time')
         
