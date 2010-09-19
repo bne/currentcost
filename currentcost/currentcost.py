@@ -17,7 +17,7 @@ class CurrentCost(object):
             self.baud = config.baud
             self.device = config.device
         try:
-            self.s = serial.Serial(self.device, self.baud, self.timeout)
+            self.s = serial.Serial(self.device, self.baud, timeout=self.timeout)
         except:
             raise
         
