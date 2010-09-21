@@ -4,9 +4,11 @@
 __author__ = 'Andy Theyers <andy.theyers@isotoma.com>'
 __docformat__ = 'restructuredtext en'
 
-import serial
+from decimal import Decimal
 from xml.etree import ElementTree # This will go wrong in early pythons...
 from xml.parsers.expat import ExpatError
+
+import serial
 
 class JunkData(Exception):
     pass
@@ -25,7 +27,7 @@ class CurrentCost(object):
         self.device = '/dev/ttyUSB0'
         self.timeout = 1
         self.use_meter_time = False
-        self.verbose = False
+        self.verbose = True
         if config is not None:
             self.baud = config.baud
             self.device = config.device
@@ -92,12 +94,12 @@ class CurrentCost(object):
                 int(et.find('ch2/watts').text),
                 int(et.find('ch3/watts').text),
                 ],
-            'temperature': float(et.find('tmpr').text),
+            'temperature': Decimal(et.find('tmpr').text),
             'history': {
-                'hours': dict([ (e.tag[1:], float(e.text)) for e in et.find('hist/hrs') ]),
-                'days': dict([ (e.tag[1:], float(e.text)) for e in et.find('hist/days') ]),
-                'months': dict([ (e.tag[1:], float(e.text)) for e in et.find('hist/mths') ]),
-                'years': dict([ (e.tag[1:], float(e.text)) for e in et.find('hist/yrs') ]),
+                'hours': dict([ (e.tag[1:], Decimal(e.text)) for e in et.find('hist/hrs') ]),
+                'days': dict([ (e.tag[1:], int(e.text)) for e in et.find('hist/days') ]),
+                'months': dict([ (e.tag[1:], int(e.text)) for e in et.find('hist/mths') ]),
+                'years': dict([ (e.tag[1:], int(e.text)) for e in et.find('hist/yrs') ]),
                 },
             }
         return d
