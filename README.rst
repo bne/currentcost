@@ -18,6 +18,21 @@ TODO
  * Look into connecting to Pachube
  * Look into Mongo and Couch for the NOSQL nutters
  
+Plan
+====
+
+Runner:
+-------
+ * Takes a config object
+ * Controls frequency of run
+ * Pass it a reader object (CurrentCost) and a writer object
+ * It handles the rest
+
+Reader:
+-------
+ * Talks to the meter
+ * Provides a standard interface
+ 
 Reference
 =========
 
