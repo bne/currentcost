@@ -10,16 +10,12 @@ from xml.parsers.expat import ExpatError
 
 import serial
 
-class JunkData(Exception):
-    pass
+from base import BaseReader
+from base import IncompleteData
+from base import JunkData
+from base import WrongBaudRate
 
-class IncompleteData(JunkData):
-    pass
-
-class WrongBaudRate(JunkData):
-    pass
-
-class CurrentCost(object):
+class CurrentCost(BaseReader):
     """Let's talk to the current cost"""
     
     def __init__(self, config=None):
