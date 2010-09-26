@@ -18,21 +18,33 @@ from base import WrongBaudRate
 class CurrentCost(BaseReader):
     """Let's talk to the current cost"""
     
-    def __init__(self, config=None):
-        self.baud = 9600
-        self.device = '/dev/ttyUSB0'
-        self.timeout = 1
-        self.use_meter_time = False
-        self.verbose = True
-        if config is not None:
-            self.baud = config.baud
-            self.device = config.device
-            self.use_meter_time = config.use_meter_time
+    def __init__(self, baud=9600, device='/dev/ttyUSB0', use_meter_time=False, verbose=False):
+        self.baud = baud
+        self.device = device
+        self.use_meter_time = use_meter_time
+        self.verbose = verbose
         try:
-            self.s = serial.Serial(self.device, self.baud, timeout=self.timeout)
+            self.s = serial.Serial(self.device, self.baud)
         except:
+            # XXX Anything neater we want to do here?
             raise
         
+    def close(self):
+        """Stop communications"""
+        self.s.close()
+        
+    def open(self):
+        """Start communications"""
+        self.s.open()
+        
+    def __iter__(self):
+        """Iterable"""
+        for xml in self.s:
+            try:
+                yield self._processdata(xml)
+            except JunkData:
+                continue
+            
     def system(self):
         return self.getdata()['system']
     
@@ -48,12 +60,14 @@ class CurrentCost(BaseReader):
         return self.getdata()['channels'][0]
     
     def getdata(self):
-        et = self.loadxml()
-        data = self._processdata(et)
+        xml = self.s.readline()
+        data = self._processdata(xml)
         return data
     
-    def loadxml(self):
-        xml = self.s.readline()
+    def _processdata(self, xml):
+        """Take a valid XML message from the meter and return a data structure"""
+        if self.verbose:
+            print xml
         try:
             # number of failure possibilities:
             #  * First call to the device may return only part of a string
@@ -69,13 +83,6 @@ class CurrentCost(BaseReader):
             if e.code == 4:
                 raise WrongBaudRate("Got gibberish - try a different baud rate")
             raise JunkData(e.message)
-        if self.verbose:
-            print ElementTree.tostring(et)
-        return et
-        
-    def _processdata(self, et):
-        """Take a(n already parsed) valid message from the meter and
-        return a data structure"""
         d = {
             'days_since_birth': int(et.find('date/dsb').text),
             'meter_time': ':'.join([ e.text for e in et.find('date')[1:] ]),
@@ -91,12 +98,14 @@ class CurrentCost(BaseReader):
                 int(et.find('ch3/watts').text),
                 ],
             'temperature': Decimal(et.find('tmpr').text),
-            'history': {
+            }
+        if et.find('hist'):
+            history = {
                 'hours': dict([ (e.tag[1:], Decimal(e.text)) for e in et.find('hist/hrs') ]),
                 'days': dict([ (e.tag[1:], int(e.text)) for e in et.find('hist/days') ]),
                 'months': dict([ (e.tag[1:], int(e.text)) for e in et.find('hist/mths') ]),
                 'years': dict([ (e.tag[1:], int(e.text)) for e in et.find('hist/yrs') ]),
-                },
-            }
+                }
+            d['history'] = history
         return d
     
